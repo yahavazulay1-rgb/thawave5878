@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#16a34a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="הגל הירוק" />
+  <title>הגל הירוק - עדכונים חמים בזמן אמת</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <style>
+    :root {
+      --bg: #0b120e;
+      --card: #121d16;
+      --card-border: #1e3326;
+      --green: #16a34a;
+      --green-light: #22c55e;
+      --text: #f0fdf4;
+      --muted: #86efac;
+      --gray: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 16px; }
+    .container { max-width: 520px; margin: 0 auto; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--card); border: 1px solid var(--card-border);
+      padding: 14px 16px; border-radius: 18px; margin-bottom: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo-badge {
+      width: 44px; height: 44px; border-radius: 12px; background: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 18px; color: #052e16;
+    }
+    .brand h1 { font-size: 20px; font-weight: 800; }
+    .brand p { font-size: 12px; color: var(--green-light); }
+    .actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--card-border);
+      background: #17261d; color: var(--text); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon-btn.active { background: var(--green); color: #052e16; }
+    .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
+    .chip {
+      padding: 8px 14px; border-radius: 999px; border: 1px solid var(--card-border);
+      background: var(--card); color: var(--gray); font-size: 13px; font-weight: 600;
+      white-space: nowrap; cursor: pointer;
+    }
+    .chip.active { background: var(--green); color: #052e16; border-color: var(--green); }
+    .install-banner {
+      display: none; background: linear-gradient(135deg, #14532d, #166534);
+      border: 1px solid var(--green-light); border-radius: 16px; padding: 14px;
+      margin-bottom: 16px; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .install-banner.show { display: flex; }
+    .btn {
+      background: var(--green); color: #052e16; border: none; border-radius: 12px;
+      padding: 10px 16px; font-weight: 800; font-size: 14px; cursor: pointer;
+    }
+    .btn-secondary { background: #1e3326; color: var(--text); }
+    .empty-state, .post-card, .admin-panel {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 18px; padding: 20px; margin-bottom: 14px;
+    }
+    .empty-state { text-align: center; padding: 40px 20px; }
+    .dot {
+      width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 14px;
+      background: radial-gradient(circle at 30% 30%, #4ade80, #15803d);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    }
+    .empty-state h2 { font-size: 17px; margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; color: var(--gray); line-height: 1.5; }
+    .post-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .post-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .post-body { font-size: 14px; color: #d1fae5; line-height: 1.5; }
+    .admin-panel { display: none; }
+    .admin-panel.open { display: block; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field textarea, .field select {
+      width: 100%; background: #0b120e; border: 1px solid var(--card-border);
+      color: var(--text); border-radius: 10px; padding: 10px; font-size: 14px;
+    }
+    .status-msg { font-size: 12px; margin-top: 8px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo-badge">גל</div>
+        <div>
+          <h1>הגל הירוק</h1>
+          <p>עדכונים חמים בזמן אמת</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" id="notifyBtn" title="הפעל התראות">🔔</button>
+        <button class="icon-btn" id="adminToggleBtn" title="ניהול">🔐</button>
+      </div>
+    </header>
+
+    <div class="install-banner" id="installBanner">
+      <div>
+        <div style="font-weight:800;font-size:14px;">התקן את הגל הירוק</div>
+        <div style="font-size:12px;color:#bbf7d0;">גישה מהירה מהמסך הראשי והתראות חמות</div>
+      </div>
+      <button class="btn" id="installBtn">התקן</button>
+    </div>
+
+    <div class="filters">
+      <button class="chip active" data-cat="all">הכל</button>
+      <button class="chip" data-cat="breaking">🚨 מבזקים</button>
+      <button class="chip" data-cat="transfers">✍️ העברות</button>
+      <button class="chip" data-cat="updates">⚽ עדכונים</button>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+      <h3 style="margin-bottom:12px;font-size:16px;">ניהול ושליחת התראה (OneSignal)</h3>
+      <div class="field">
+        <label>OneSignal App ID</label>
+        <input type="text" id="appIdInput" value="f29da2eb-b731-46e7-b51e-435c87b0062d" />
+      </div>
+      <div class="field">
+        <label>OneSignal REST API Key</label>
+        <input type="password" id="restKeyInput" value="os_v2_app_6ko2f25xgfdopni6inoipmagfvj5vuwfegjedrn3inrooozxwwnr4nadmurz6geterk55mln37jwxc5smni7wtmfjrppjtewi2m2nka" />
+      </div>
+      <button class="btn btn-secondary" id="saveKeysBtn" style="width:100%;margin-bottom:14px;">שמור הגדרות OneSignal</button>
+
+      <div class="field">
+        <label>קטגוריה</label>
+        <select id="postCat">
+          <option value="breaking">🚨 מבזקים</option>
+          <option value="transfers">✍️ העברות</option>
+          <option value="updates">⚽ עדכונים</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>כותרת העדכון / ההתראה</label>
+        <input type="text" id="postTitle" placeholder="לדוגמה: פרסום ראשון בהגל הירוק..." />
+      </div>
+      <div class="field">
+        <label>תוכן העדכון</label>
+        <textarea id="postBody" rows="3" placeholder="פרטי הידיעה..."></textarea>
+      </div>
+      <button class="btn" id="publishBtn" style="width:100%;">פרסם ושלח התראה לכולם</button>
+      <div class="status-msg" id="adminStatus"></div>
+    </div>
+
+    <div id="feedContainer"></div>
+  </div>
+
+  <script>
+    const DEFAULT_APP_ID = "f29da2eb-b731-46e7-b51e-435c87b0062d";
+    const DEFAULT_REST_KEY = "os_v2_app_6ko2f25xgfdopni6inoipmagfvj5vuwfegjedrn3inrooozxwwnr4nadmurz6geterk55mln37jwxc5smni7wtmfjrppjtewi2m2nka";
+
+    function getAppId() {
+      return localStorage.getItem("os_app_id") || DEFAULT_APP_ID;
+    }
+    function getRestKey() {
+      return localStorage.getItem("os_rest_key") || DEFAULT_REST_KEY;
+    }
+
+    document.getElementById("appIdInput").value = getAppId();
+    document.getElementById("restKeyInput").value = getRestKey();
+
+    // Register Service Worker explicitly for PWA installability
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./OneSignalSDKWorker.js", { scope: "/thawave/" })
+          .catch(err => console.warn("SW registration note:", err));
+      });
+    }
+
+    // OneSignal v16 initialization
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: getAppId(),
+        serviceWorkerParam: { scope: "/thawave/" },
+        serviceWorkerPath: "OneSignalSDKWorker.js",
+        notifyButton: { enable: false }
+      });
+    });
+
+    document.getElementById("notifyBtn").addEventListener("click", () => {
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.Notifications.requestPermission();
+      });
+    });
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById("installBanner").classList.add("show");
+    });
+
+    document.getElementById("installBtn").addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById("installBanner").classList.remove("show");
+    });
+
+    // Admin toggle & settings
+    document.getElementById("adminToggleBtn").addEventListener("click", () => {
+      document.getElementById("adminPanel").classList.toggle("open");
+    });
+
+    document.getElementById("saveKeysBtn").addEventListener("click", () => {
+      localStorage.setItem("os_app_id", document.getElementById("appIdInput").value.trim());
+      localStorage.setItem("os_rest_key", document.getElementById("restKeyInput").value.trim());
+      document.getElementById("adminStatus").textContent = "הגדרות OneSignal נשמרו בהצלחה.";
+    });
+
+    // Local feed + OneSignal Push API
+    let currentFilter = "all";
+    function getPosts() {
+      return JSON.parse(localStorage.getItem("green_wave_posts") || "[]");
+    }
+    function renderPosts() {
+      const container = document.getElementById("feedContainer");
+      const posts = getPosts().filter(p => currentFilter === "all" || p.cat === currentFilter);
+      if (!posts.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="dot"></div>
+            <h2>אין כרגע עדכונים חדשים</h2>
+            <p>ברגע שיעלה עדכון חדש בעמוד הגל הירוק, הוא יופיע כאן מיד ותישלח התראה.</p>
+          </div>`;
+        return;
+      }
+      const catNames = { breaking: "🚨 מבזקים", transfers: "✍️ העברות", updates: "⚽ עדכונים" };
+      container.innerHTML = posts.map(p => `
+        <div class="post-card">
+          <div class="post-meta">
+            <span>${catNames[p.cat] || "⚽ עדכון"}</span>
+            <span>${p.time}</span>
+          </div>
+          <div class="post-title">${p.title}</div>
+          <div class="post-body">${p.body}</div>
+        </div>
+      `).join("");
+    }
+
+    document.querySelectorAll(".chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.dataset.cat;
+        renderPosts();
+      });
+    });
+
+    document.getElementById("publishBtn").addEventListener("click", async () => {
+      const cat = document.getElementById("postCat").value;
+      const title = document.getElementById("postTitle").value.trim();
+      const body = document.getElementById("postBody").value.trim();
+      const statusEl = document.getElementById("adminStatus");
+
+      if (!title || !body) {
+        statusEl.textContent = "נא למלא כותרת ותוכן לעדכון.";
+        return;
+      }
+
+      const posts = getPosts();
+      posts.unshift({
+        cat,
+        title,
+        body,
+        time: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })
+      });
+      localStorage.setItem("green_wave_posts", JSON.stringify(posts));
+      renderPosts();
+
+      statusEl.textContent = "שולח התראה דרך OneSignal...";
+      try {
+        const res = await fetch("https://api.onesignal.com/notifications?c=push", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "Key " + getRestKey()
+          },
+          body: JSON.stringify({
+            app_id: getAppId(),
+            included_segments: ["Total Subscriptions"],
+            headings: { en: title, he: title },
+            contents: { en: body, he: body },
+            url: "https://yahavazulay1-rgb.github.io/thawave/"
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          statusEl.textContent = "העדכון פורסם וההתראה נשלחה בהצלחה!";
+          document.getElementById("postTitle").value = "";
+          document.getElementById("postBody").value = "";
+        } else {
+          statusEl.textContent = "פורסם באתר, אך OneSignal החזיר שגיאה: " + (data.errors ? JSON.stringify(data.errors) : res.status);
+        }
+      } catch (err) {
+        statusEl.textContent = "פורסם באתר, שגיאת רשת בשליחת ההתראה: " + err.message;
+      }
+    });
+
+    renderPosts();
+  </script>
+</body>
+</html>

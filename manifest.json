@@ -1,0 +1,26 @@
+{
+  "name": "הגל הירוק",
+  "short_name": "הגל הירוק",
+  "description": "עדכונים חמים בזמן אמת — הגל הירוק",
+  "start_url": "/thawave/",
+  "scope": "/thawave/",
+  "display": "standalone",
+  "background_color": "#0b120e",
+  "theme_color": "#16a34a",
+  "dir": "rtl",
+  "lang": "he",
+  "icons": [
+    {
+      "src": "https://yahavazulay1-rgb.github.io/thawave/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://yahavazulay1-rgb.github.io/thawave/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
